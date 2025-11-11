@@ -58,7 +58,7 @@ class Attention(nn.Module):
         attn = self.attn_drop(attn)
         if N >= 512 + 196:
             vis_attn = attn.detach().mean(0).mean(0)
-        elif N <= 512:
+        else:
             vis_attn = None
 
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)

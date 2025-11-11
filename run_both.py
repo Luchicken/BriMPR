@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument("--gpu", type=str, default='0, 1, 2', help="gpu device number")
     parser.add_argument('--tta_method', type=str, default='BriMPR', choices=['None', 'Tent', 'T3A', 'EATA', 'SAR',
                                                                            'DeYO', 'READ', 'BriMPR'], help='which TTA method to be used')
-    parser.add_argument('--corruption_modality', type=str, default='audio', choices=['video', 'audio', 'none'], help='which modality to be corrupted')
+    parser.add_argument('--corruption_modality', type=str, default='both', choices=['both'], help='which modality to be corrupted')
     parser.add_argument('--severity_start', type=int, default=5, help='the start severity of the corruption')
     parser.add_argument('--severity_end', type=int, default=5, help='the end severity of the corruption')
     parser.add_argument('--iters', type=int, default=3, help='number of iterations')
@@ -64,11 +64,11 @@ def get_args():
     # BriMPR parameters
     parser.add_argument('--num_prompts_a', type=int, default=10, help='number of inserted prompts for audio')
     parser.add_argument('--num_prompts_v', type=int, default=10, help='number of inserted prompts for video')
-    parser.add_argument('--prompt_layers', type=int, default=11, help='number of layers for prompt insertion')
+    parser.add_argument('--prompt_layers', type=int, default=11, help='number of layers for prompt insertion')  # deep
     parser.add_argument("--mask", type=float, default=0.5, help="mask ratio")
     parser.add_argument("--a", type=float, default=0.2, help="hyperparameter for AdaTp")
     parser.add_argument("--b", type=float, default=5, help="hyperparameter for AdaTp")
-    parser.add_argument("--tau", type=float, default=0.07, help="tau for contrastive loss")
+    parser.add_argument("--tau", type=float, default=0.25, help="tau for contrastive loss")
     parser.add_argument('--num_samples_source', type=int, default=32, help='number of source samples')
 
     return parser.parse_args()
@@ -78,20 +78,18 @@ if __name__ == '__main__':
     args = get_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    corruption_list_a = ['gaussian_noise', 'traffic', 'crowd', 'rain', 'thunder', 'wind']
+    corruption_list_v = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur',
+                         'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness',
+                         'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
     if args.dataset == 'vggsound':
         args.n_class = 309
+        corruption_list_1 = corruption_list_a
+        corruption_list_2 = corruption_list_v
     elif args.dataset == 'ks50':
         args.n_class = 50
-
-    if args.corruption_modality == 'video':
-        corruption_list = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur',
-                           'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness',
-                           'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
-    elif args.corruption_modality == 'audio':
-        corruption_list = ['gaussian_noise', 'traffic', 'crowd', 'rain', 'thunder', 'wind']
-    elif args.corruption_modality == 'none':
-        corruption_list = ['clean']
-        args.severity_start = args.severity_end = 0
+        corruption_list_1 = corruption_list_v
+        corruption_list_2 = corruption_list_a
 
     logger = logging.getLogger(__name__)
     get_logger(args)
@@ -136,36 +134,38 @@ if __name__ == '__main__':
 
     ###############################################################
     domain_accs = []
-    for corruption in corruption_list:  # corruption
-        for severity in range(args.severity_start, args.severity_end + 1):  # severity
-            epoch_accs = []
+    for corruption_1 in corruption_list_1:  # corruption for primary modality
+        second_accs = []
+        for corruption_2 in corruption_list_2:  # corruption for secondary modality
+            for severity in range(args.severity_start, args.severity_end + 1):  # severity for secondary modality
+                # code_path/json_csv_files/[ks50, vgg]/both/
+                data_val = os.path.join(args.json_root, args.corruption_modality, '{}', '{}_severity_{}.json').format(
+                    corruption_1, corruption_2, severity)
+                logger.info(f'===> Now handling: {corruption_1}-{5} + {corruption_2}-{severity}')
 
-            if args.corruption_modality == 'none':  # code_path/json_csv_files/[ks50, vgg]/clean/severity_0.json
-                data_val = os.path.join(args.json_root, corruption, 'severity_{}.json').format(severity)
-            else:
-                data_val = os.path.join(args.json_root, args.corruption_modality, '{}', 'severity_{}.json').format(corruption, severity)
-            logger.info(f'===> Now handling: {corruption}-{severity}')
+                itr_accs = []
+                for itr in range(1, args.iters + 1):
+                    seed = int(str(itr)*3)
+                    seed_everything(seed=seed)
+                    logger.info("### Round {}, Seed={} ###".format(itr, seed))
+                    if adapt_flag:
+                        model.reset()
+                        torch.cuda.empty_cache()
+                        logger.info("resetting model")
 
-            for itr in range(1, args.iters + 1):
-                seed = int(str(itr)*3)
-                seed_everything(seed=seed)
-                logger.info("### Round {}, Seed={} ###".format(itr, seed))
-                if adapt_flag:
-                    model.reset()
-                    torch.cuda.empty_cache()
-                    logger.info("resetting model")
-
-                ###############################################################
-                # all exp in this work is based on 224 * 224 image
-                im_res = 224
-                val_audio_conf = {'num_mel_bins': 128, 'target_length': args.target_length, 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset,
-                                  'mode': 'eval', 'mean': args.dataset_mean, 'std': args.dataset_std, 'noise': False, 'im_res': im_res}
-                tta_loader = torch.utils.data.DataLoader(
-                    dataloader.AudiosetDataset(data_val, label_csv=args.label_csv, audio_conf=val_audio_conf),
-                    batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True, drop_last=False)
-                ###############################################################
-                with torch.no_grad():
-                    for epoch in range(1):
+                    ###############################################################
+                    # all exp in this work is based on 224 * 224 image
+                    im_res = 224
+                    val_audio_conf = {'num_mel_bins': 128, 'target_length': args.target_length, 'freqm': 0,
+                                      'timem': 0, 'mixup': 0, 'dataset': args.dataset,
+                                      'mode': 'eval', 'mean': args.dataset_mean, 'std': args.dataset_std,
+                                      'noise': False, 'im_res': im_res}
+                    tta_loader = torch.utils.data.DataLoader(
+                        dataloader.AudiosetDataset(data_val, label_csv=args.label_csv, audio_conf=val_audio_conf),
+                        batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True,
+                        drop_last=False)
+                    ###############################################################
+                    with torch.no_grad():
                         data_bar = tqdm(tta_loader)
                         batch_accs = []
 
@@ -173,7 +173,7 @@ if __name__ == '__main__':
                             a_input = a_input.to(device)
                             v_input = v_input.to(device)
                             outputs, loss = model((a_input, v_input), adapt_flag=adapt_flag)  # infer and adapt
-                            batch_acc = accuracy(outputs, labels, topk=(1, ))
+                            batch_acc = accuracy(outputs, labels, topk=(1,))
                             batch_acc = round(batch_acc[0].item(), 2)
                             batch_accs.append(batch_acc)
 
@@ -182,11 +182,13 @@ if __name__ == '__main__':
                             else:
                                 data_bar.set_description(f'Batch#{i}: Acc#{batch_acc:.1f}')
 
-                        epoch_acc = round(sum(batch_accs) / len(batch_accs), 2)
-                        epoch_accs.append(epoch_acc)
-                        logger.info(f'Epoch{epoch}: all acc is {epoch_acc}')
+                        itr_acc = round(sum(batch_accs) / len(batch_accs), 2)
+                        itr_accs.append(itr_acc)
+                        logger.info(f'Iter{itr}: all acc is {itr_acc}')
 
-            domain_accs.append(np.mean(epoch_accs))
-            logger.info(f'===> {corruption}-{severity}, mean: {np.round(np.mean(epoch_accs), 2)}, std: {np.round(np.std(epoch_accs), 2)}')
+                second_accs.append(np.mean(itr_accs))
+                logger.info(f'===> {corruption_1}-{5} + {corruption_2}-{severity}, mean: {np.round(np.mean(itr_accs), 2)}, std: {np.round(np.std(itr_accs), 2)}')
+        domain_accs.append(np.mean(second_accs))
+        logger.info(f'===> {corruption_1}-{5}: {np.round(second_accs, 2)}, mean: {np.round(np.mean(second_accs), 2)}')
     logger.info(f'===> Final result: {np.round(domain_accs, 2)}')
     logger.info(f'===> Mean result: {np.round(np.mean(domain_accs), 2)}')

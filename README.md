@@ -1,7 +1,10 @@
 # Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation
-This is the official PyTorch implementation for Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation (**AAAI Oral**).
+
+This is the official PyTorch implementation for Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation (AAAI Oral).
 
 ![Overview](./images/Overview.png)
+
+The repository currently supports the following methods: Source, [T3A](https://proceedings.neurips.cc/paper_files/paper/2021/file/1415fe9fea0fa1e45dddcff5682239a0-Paper.pdf), [Tent](https://arxiv.org/pdf/2006.10726), [EATA](https://arxiv.org/abs/2204.02610), [SAR](https://openreview.net/pdf?id=g2YraF75Tj), [DeYO](https://openreview.net/forum?id=9w3iw8wDuE), [READ](https://openreview.net/pdf?id=TPZRq4FALB) and BriMPR.
 
 ## Prerequisites
 
@@ -15,8 +18,10 @@ pip install -r requirements.txt
 
 The corresponding datasets need to be downloaded:
 
-- Kinetics50: Refer to [2024-ICLR-READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the training set and validation set.
-- VGGSound: Refer to [2024-ICLR-READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the testing set. The training set can be downloaded from https://huggingface.co/datasets/Loie/VGGSound.
+- **Kinetics50**: Refer to [READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the training set and validation set.
+- **VGGSound**: Refer to [READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the testing set. The training set can be downloaded from https://huggingface.co/datasets/Loie/VGGSound.
+
+The pre-trained source model can be found in [READ](https://github.com/XLearning-SCU/2024-ICLR-READ).
 
 **Step 1. Introduce corruptions**
 
@@ -49,23 +54,25 @@ python ./data_process/create_both_c_json.py --clean-path 'code_path/json_csv_fil
 
 ## Run Experiments
 
+### unimodal corruption
+
 ```shell
 # Kinetics50
-
-# unimodal corruption
 python run.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality [audio/video] --dataset ks50 --json_root 'code_path/json_csv_files/ks50' --label_csv 'code_path/json_csv_files/class_labels_indices_ks50.csv' --pretrain_path 'code_path/pretrained_model/cav_mae_ks50.pth'
-
-# multimodal corruption
-python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality both --dataset ks50 --json_root 'code_path/json_csv_files/ks50' --label_csv 'code_path/json_csv_files/class_labels_indices_ks50.csv' --pretrain_path 'code_path/pretrained_model/cav_mae_ks50.pth'
+# VGGSound
+python run.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality [audio/video] --dataset vggsound --json_root 'code_path/json_csv_files/vgg' --label_csv 'code_path/json_csv_files/class_labels_indices_vgg.csv' --pretrain_path 'code_path/pretrained_model/vgg_65.5.pth'
 ```
+
+### multimodal corruption
 
 ```shell
+# Kinetics50
+python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality both --dataset ks50 --json_root 'code_path/json_csv_files/ks50' --label_csv 'code_path/json_csv_files/class_labels_indices_ks50.csv' --pretrain_path 'code_path/pretrained_model/cav_mae_ks50.pth'
 # VGGSound
-
-# unimodal corruption
-python run.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality [audio/video] --dataset vggsound --json_root 'code_path/json_csv_files/vgg' --label_csv 'code_path/json_csv_files/class_labels_indices_vgg.csv' --pretrain_path 'code_path/pretrained_model/vgg_65.5.pth'
-
-# multimodal corruption
 python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality both --dataset vggsound --json_root 'code_path/json_csv_files/vgg' --label_csv 'code_path/json_csv_files/class_labels_indices_vgg.csv' --pretrain_path 'code_path/pretrained_model/vgg_65.5.pth'
 ```
+
+## Acknowledgements
+
+[CAV-MAE](https://github.com/YuanGongND/cav-mae?tab=readme-ov-file#pretrained-models), [T3A](https://github.com/matsuolab/T3A), [Tent](https://github.com/DequanWang/tent), [EATA](https://github.com/mr-eggplant/EATA), [SAR](https://github.com/mr-eggplant/SAR), [DeYO](https://github.com/Jhyun17/DeYO) and [READ](https://github.com/XLearning-SCU/2024-ICLR-READ).
 

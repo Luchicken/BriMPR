@@ -83,7 +83,7 @@ class BriMPR(nn.Module):
     def forward(self, x, adapt_flag, labels=None):
         for _ in range(self.steps):
             outputs, loss = forward_and_adapt(x, self.pva_model, self.optimizer, self.args, self.scaler,
-                                              self.src_stat_a, self.src_stat_v, self.src_stat_u, labels)
+                                              self.src_stat_a, self.src_stat_v, self.src_stat_u)
             # -------------------------------------- cmmtta --------------------------------------
             # outputs, loss, dist_a, dist_v = forward_and_adapt(x, self.pva_model, self.optimizer, self.args, self.scaler,
             #                                                   self.src_stat_a, self.src_stat_v, self.src_stat_u, labels)
