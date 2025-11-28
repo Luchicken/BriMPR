@@ -1,6 +1,6 @@
-# Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation
+# [AAAI 2026] Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation
 
-This is the official PyTorch implementation for Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation (AAAI Oral).
+This is the official PyTorch implementation for Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation (**AAAI 2026 Oral**).
 
 ![Overview](./images/Overview.png)
 
@@ -18,8 +18,8 @@ pip install -r requirements.txt
 
 The corresponding datasets need to be downloaded:
 
-- **Kinetics50**: Refer to [READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the training set and validation set.
-- **VGGSound**: Refer to [READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the testing set. The training set can be downloaded from https://huggingface.co/datasets/Loie/VGGSound.
+- **Kinetics50**: Refer to [READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the training set (optional) and validation set.
+- **VGGSound**: Refer to [READ](https://github.com/XLearning-SCU/2024-ICLR-READ) to download the testing set. The training set (optional) can be downloaded from https://huggingface.co/datasets/Loie/VGGSound.
 
 The pre-trained source model can be found in [READ](https://github.com/XLearning-SCU/2024-ICLR-READ).
 
@@ -74,5 +74,5 @@ python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality bot
 
 ## Acknowledgements
 
-[CAV-MAE](https://github.com/YuanGongND/cav-mae?tab=readme-ov-file#pretrained-models), [T3A](https://github.com/matsuolab/T3A), [Tent](https://github.com/DequanWang/tent), [EATA](https://github.com/mr-eggplant/EATA), [SAR](https://github.com/mr-eggplant/SAR), [DeYO](https://github.com/Jhyun17/DeYO) and [READ](https://github.com/XLearning-SCU/2024-ICLR-READ).
+Thanks for the publicly available code of [CAV-MAE](https://github.com/YuanGongND/cav-mae?tab=readme-ov-file#pretrained-models), [T3A](https://github.com/matsuolab/T3A), [Tent](https://github.com/DequanWang/tent), [EATA](https://github.com/mr-eggplant/EATA), [SAR](https://github.com/mr-eggplant/SAR), [DeYO](https://github.com/Jhyun17/DeYO) and [READ](https://github.com/XLearning-SCU/2024-ICLR-READ).
 
