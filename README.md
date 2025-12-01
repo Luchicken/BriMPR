@@ -72,6 +72,19 @@ python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality bot
 python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality both --dataset vggsound --json_root 'code_path/json_csv_files/vgg' --label_csv 'code_path/json_csv_files/class_labels_indices_vgg.csv' --pretrain_path 'code_path/pretrained_model/vgg_65.5.pth'
 ```
 
+## Citation
+
+If our BriMPR is helpful in your research, please consider citing our paper:
+
+```
+@article{li2025bridgingmodalitiesprogressiverealignment,
+  title={Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation}, 
+  author={Jiacheng Li and Songhe Feng},
+  journal={arXiv preprint arXiv:2511.22862},
+  year={2025}
+}
+```
+
 ## Acknowledgements
 
 Thanks for the publicly available code of [CAV-MAE](https://github.com/YuanGongND/cav-mae?tab=readme-ov-file#pretrained-models), [T3A](https://github.com/matsuolab/T3A), [Tent](https://github.com/DequanWang/tent), [EATA](https://github.com/mr-eggplant/EATA), [SAR](https://github.com/mr-eggplant/SAR), [DeYO](https://github.com/Jhyun17/DeYO) and [READ](https://github.com/XLearning-SCU/2024-ICLR-READ).
