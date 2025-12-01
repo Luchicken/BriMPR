@@ -1,6 +1,6 @@
 # [AAAI 2026] Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation
 
-This is the official PyTorch implementation for Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation (**AAAI 2026 Oral**).
+This is the official PyTorch implementation for [Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation](https://arxiv.org/abs/2511.22862) (**AAAI 2026 Oral**).
 
 ![Overview](./images/Overview.png)
 
