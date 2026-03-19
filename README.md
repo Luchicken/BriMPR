@@ -84,6 +84,9 @@ If our BriMPR is helpful in your research, please consider citing our paper:
   pages={22931-22939},
   year={2026}
 }
+```
+
+```
 @article{li2025bridgingmodalitiesprogressiverealignment,
   title={Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation}, 
   author={Jiacheng Li and Songhe Feng},
