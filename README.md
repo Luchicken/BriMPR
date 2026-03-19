@@ -77,6 +77,13 @@ python run_both.py --gpu '0, 1, 2' --tta_method BriMPR --corruption_modality bot
 If our BriMPR is helpful in your research, please consider citing our paper:
 
 ```
+@inproceedings{Li_Feng_2026, 
+  title={Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation},
+  author={Li, Jiacheng and Feng, Songhe},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  pages={22931-22939},
+  year={2026}
+}
 @article{li2025bridgingmodalitiesprogressiverealignment,
   title={Bridging Modalities via Progressive Re-alignment for Multimodal Test-Time Adaptation}, 
   author={Jiacheng Li and Songhe Feng},
